@@ -1,0 +1,69 @@
+package logx
+
+import (
+	"io"
+	"os"
+	"path/filepath"
+
+	"github.com/go-xuan/typex"
+	"gopkg.in/natefinch/lumberjack.v2"
+)
+
+var (
+	writerBuilders *typex.Enum[string, WriterBuilder] // 日志写入器构造函数池
+)
+
+// WriterBuilder 日志写入器构造函数
+type WriterBuilder func(source, name string) io.Writer
+
+// RegisterClientBuilder 注册日志写入器构造函数
+func RegisterClientBuilder(name string, builder WriterBuilder) {
+	if writerBuilders == nil {
+		writerBuilders = typex.NewStringEnum[WriterBuilder]()
+	}
+	writerBuilders.Add(name, builder)
+}
+
+// NewWriter 创建日志写入器
+func NewWriter(writer string, name string, level ...string) io.Writer {
+	switch writer {
+	case "console":
+		return NewConsoleWriter()
+	case "file":
+		if len(level) > 0 && level[0] != "" {
+			name = name + "_" + level[0]
+		}
+		name = filepath.Join("log", name+".log")
+		return NewFileWriter(name)
+	default:
+		if writerBuilders != nil {
+			if builder, ok := writerBuilders.Exist(writer); ok && builder != nil {
+				return builder("log", name)
+			}
+		}
+	}
+	return nil
+}
+
+// NewConsoleWriter 创建控制台日志写入器
+func NewConsoleWriter() io.Writer {
+	return &ConsoleWriter{}
+}
+
+// ConsoleWriter 日志写入控制台
+type ConsoleWriter struct{}
+
+func (w *ConsoleWriter) Write(bytes []byte) (int, error) {
+	return os.Stdout.Write(bytes)
+}
+
+// NewFileWriter 创建本地文件日志写入器
+func NewFileWriter(filename string) io.Writer {
+	return &lumberjack.Logger{
+		Filename:   filename, // 日志文件路径
+		MaxSize:    100,      // 日志文件最大大小（MB）
+		MaxAge:     7,        // 日志保留天数
+		MaxBackups: 10,       // 日志备份数量
+		Compress:   true,     // 是否压缩
+	}
+}
