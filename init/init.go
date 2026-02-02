@@ -3,7 +3,7 @@ package init
 import (
 	"github.com/go-xuan/logx"
 
-	"github.com/go-xuan/quanx/configx"
+	"github.com/go-xuan/configx"
 	"github.com/go-xuan/utilx/errorx"
 	log "github.com/sirupsen/logrus"
 )
