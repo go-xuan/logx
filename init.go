@@ -2,19 +2,21 @@ package logx
 
 import (
 	"github.com/go-xuan/configx"
+	"github.com/go-xuan/utilx/errorx"
 	log "github.com/sirupsen/logrus"
 )
 
 func init() {
 	log.SetOutput(NewConsoleWriter()) // 设置默认日志输出
-	Init()                            // 初始化日志配置
+	_ = Initialize()                  // 初始化日志，先使用默认配置
 }
 
-func Init() {
-	logger := log.WithField("package", "logx")
+func Initialize() error {
+	logger := log.WithField("package", "ossx")
 	if err := configx.LoadConfigurator(&Config{}); err == nil {
-		logger.Info("initialized success")
-		return
+		logger.Info("initialize success")
+		return nil
 	}
-	logger.Warn("initialized failed")
+	logger.Warn("initialize failed")
+	return errorx.New("initialize logx failed")
 }
