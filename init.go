@@ -18,5 +18,5 @@ func Initialize() error {
 		return nil
 	}
 	logger.Warn("initialize failed")
-	return errorx.New("initialize logx failed")
+	return errorx.New("failed to initialize logx")
 }
