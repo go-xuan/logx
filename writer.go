@@ -37,7 +37,7 @@ func NewWriter(writer string, name string, level ...string) io.Writer {
 		return NewFileWriter(name)
 	default:
 		if writerBuilders != nil {
-			if builder, ok := writerBuilders.Exist(writer); ok && builder != nil {
+			if builder, ok := writerBuilders.Find(writer); ok && builder != nil {
 				return builder("log", name)
 			}
 		}
